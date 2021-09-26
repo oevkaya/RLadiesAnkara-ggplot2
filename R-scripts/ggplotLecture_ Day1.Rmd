@@ -1,0 +1,806 @@
+---
+title: "ggplot Lecture Notes-Day1"
+author: "oevkaya"
+date: "25/09/2021"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE, fig.align='center'}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Base Plots
+
+The world without ggplot
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+With ggplot
+
+```{r, echo=FALSE}
+require(ggplot2)
+ggplot(data=pressure, aes(x=temperature, y=pressure)) +
+  geom_point()
+```
+
+##
+
+![](opening.gif)
+
+## About ggplot package 
+
+- ggplot2 is an R package for producing statistical, or data, graphics, but it is
+unlike most other graphics packages because it has a deep underlying grammar.
+
+- This grammar, based on the Grammar of Graphics (Wilkinson, 2005),
+is made up of a set of independent components that can be composed in
+many different ways. 
+
+- This makes ggplot2 very powerful because you are not
+limited to a set of pre-specified graphics, but you can create new graphics
+that are precisely tailored for your problem.
+
+- ggplot2 is designed to work iteratively. You can start with a layer showing
+the raw data then add layers of annotations and statistical summaries.
+
+-  It allows you to produce graphics using the same structured thinking that you
+use to design an analysis
+
+## Grammer of Graphics
+
+![](book.png)
+
+## Why ggplot2 instead of base in R 
+
+- Nice default settings
+
+- easy faceting for multiple graphs
+
+- a natural syntax, layer by layer
+
+- switching type of charts easily
+
+- addins for starting point of view 
+
+- more integrated packages
+
+## 
+
+![](ggplotPower.gif)
+
+## Main layers
+
+![](3layers.png)
+
+## With customization 
+
+![](4layervis.png)
+
+## Totally
+
+![](7layers.png)
+
+## Overall Scene
+
+![](jargon.png)
+
+Source: Introduction to DataVis ggplot2, DataCamp course notes
+
+## Start from scratch
+
+```{r, echo= F, message=F}
+library(tidyverse)
+library(mosaicData)
+
+# load data
+data(mtcars)
+head(mtcars)
+
+sapply(mtcars, class)
+```
+
+## The simple template
+
+```{r, eval= FALSE}
+ggplot(data = ---, mapping = aes(x = ---, y = ---)) +
+  geom_----()
+
+# Add the layers one by one
+# specify dataset and mapping
+ggplot(data = mtcars, mapping = aes(x = mpg, y = cyl))
+```
+
+## 
+
+```{r}
+# Need something else
+# Geoms are the geometric objects (points, lines, bars, etc.) that can be placed on a graph
+
+ggplot(data = mtcars, mapping = aes(x = mpg, y = cyl)) + 
+  geom_point()
+
+ggplot(data = mtcars, mapping = aes(x = mpg, y = hp)) + 
+  geom_point()
+
+```
+
+## Alternatively
+
+```{r}
+scat_mtcars <- ggplot(mtcars, aes(x = mpg, y = hp)) + 
+  geom_point()
+
+# OR 
+scat_mtcars2 <- ggplot(mtcars) + 
+  geom_point(aes(x = mpg, y = hp))
+
+# OR 
+
+mtcars %>% 
+  ggplot() + 
+  geom_point(aes(x = mpg, y = hp))
+
+```
+
+##
+
+![](coloring.gif)
+
+## Play with aesthetics
+
+```{r, echo=TRUE}
+ggplot(mtcars, aes(x = mpg, y = hp, color = gear)) + 
+  geom_point()
+
+ggplot(mtcars, aes(x = mpg, y = hp, color = as.factor(gear))) + 
+  geom_point()
+
+ggplot(mtcars, aes(x = mpg, y = hp, fill = as.factor(gear))) + 
+  geom_point()
+```
+
+## Play with aesthetics
+
+```{r, echo=F}
+ggplot(mtcars, aes(x = mpg, y = hp, color = as.factor(gear))) + 
+  geom_point(alpha = 0.1, size = 1)
+
+ggplot(mtcars, aes(x = mpg, y = hp, color = as.factor(gear))) + 
+  geom_point(alpha = 0.5, size = 5)
+
+# More within geom_point()
+# color = class, size = class, shape = class, alpha = class
+```
+
+```{r}
+ggplot(mtcars, aes(x = mpg, y = hp, color = as.factor(gear))) + 
+  geom_point(alpha = 5.1, size = 5.5)
+```
+
+
+## 
+
+![](ReduceSize.gif)
+
+## Add a trend line
+
+```{r, echo=TRUE}
+
+ggplot(mtcars, aes(x = mpg, y = hp)) + 
+  geom_point(alpha = 0.5, size = 5) + 
+    geom_smooth(method = "lm", se = FALSE, size = 1.5)
+
+ggplot(mtcars, aes(x = mpg, y = hp, color = as.factor(gear))) + 
+  geom_point(alpha = 0.5, size = 5) + 
+    geom_smooth(method = "lm", se = FALSE, size = 1.5)
+
+```
+
+
+## Add lines for data
+
+```{r, echo=F}
+ggplot(mtcars, aes(x = mpg, y = hp)) + 
+  geom_point(alpha = 0.5, size = 5) + 
+  geom_line()
+
+```
+
+## 
+
+![](IwannaGo.gif)
+
+## Univariate Graphs 
+
+For Categorical data we have; 
+
+- a bar chart
+- a pie chart
+- or (less commonly) a tree map
+
+## 
+
+```{r}
+# plot the distribution of gear
+ggplot(mtcars, aes(x = cyl)) + 
+  geom_bar()
+
+# You can modify the bar fill and border colors
+ggplot(mtcars, aes(x = cyl)) + 
+  geom_bar(fill= "red", color= "black")
+
+```
+
+## As percentage
+
+```{r}
+ggplot(mtcars, aes(x = cyl, y = ..count.. / sum(..count..))) + 
+  geom_bar(fill= "red", color= "black") 
+
+# You can modify the bar fill and border colors
+ggplot(mtcars, aes(x = as.factor(cyl), y = ..count.. / sum(..count..))) + 
+  geom_bar(fill= "red", color= "black")  
+  # scale_y_continuous(labels = scales::percent)
+
+# Lets customize a bit
+
+```
+
+
+## Flipping coordinate
+
+```{r, echo=F}
+# horizontal bar chart UPDATE
+ggplot(mtcars, aes(x = as.factor(cyl))) + 
+  geom_bar(fill= "red", color= "black") + 
+  labs()
+  labs(x = "cyl",
+       y = "level",
+       title = "Frequency of cyl") +
+  coord_flip
+```
+
+## Tree Map 
+
+```{r, echo=F}
+# install.packages("treemapify")
+library(treemapify)
+
+# create a treemap of marriage officials
+cyldata <- mtcars %>%
+  count(cyl)
+
+ggplot(cyldata, 
+       aes(fill = as.factor(cyl), 
+           area = n)) +
+  geom_treemap() + 
+  labs(title = "Cyl levels")
+
+# add label
+
+ggplot(cyldata, 
+       aes(fill = as.factor(cyl), 
+           area = n, 
+           label = as.factor(cyl))) +
+  geom_treemap(stat = "count") + 
+  labs(title = "Cyl levels") + 
+  geom_treemap_text(colour = "black", 
+                    place = "centre")
+ # + theme(legend.position = "none")
+
+```
+
+## Quantitative data
+
+The distribution of a single quantitative variable is typically plotted with a histogram, kernel density plot, or dot plot.
+
+
+## Change the data 
+
+```{r, echo=TRUE}
+library("gapminder")
+data(gapminder)
+
+head(gapminder)
+
+```
+
+## Histogram
+
+```{r, echo= F}
+ggplot(gapminder, aes(x = lifeExp)) + 
+  geom_histogram()
+
+ggplot(gapminder, aes(x = lifeExp)) + 
+  geom_histogram(bins = 10)
+
+```
+
+## Add some features
+
+```{r}
+ggplot(gapminder, aes(x = lifeExp, y= ..count.. / sum(..count..))) + 
+  geom_histogram() +
+  geom_density(color= "red")
+  
+# Create a kernel density plot of age
+ggplot(gapminder, aes(x = lifeExp)) + 
+  # geom_histogram() +
+  geom_density(color= "red")
+
+# Create a kernel density plot of age
+ggplot(gapminder, aes(x = lifeExp)) +
+  geom_density(fill = "indianred3") + 
+  labs(title = "Life Expectancy")
+
+```
+
+## 
+
+![](IamFine.gif)
+
+## Bivariate Graphs
+
+Bivariate graphs display the relationship between two variables. We have different options for this; 
+
+- **Categorical vs. Categorical**
+When plotting the relationship between two categorical variables, stacked, grouped, or segmented bar charts are typically used
+
+- **Quantitative vs. Quantitative**
+The relationship between two quantitative variables is typically displayed using scatterplots and line graphs
+
+- **Categorical vs. Quantitative**
+When plotting the relationship between a categorical variable and a quantitative variable, a large number of graph types are available. These include bar charts using summary statistics, grouped kernel density plots, side-by-side box plots, side-by-side violin plots, mean/sem plots, ridgeline plots, and Cleveland plots.
+
+## Stacked bar chart 
+
+```{r}
+# stacked bar chart
+ggplot(mpg, 
+       aes(x = class, fill = drv)) + 
+  geom_bar(position = "stack")
+
+# What about manufacturer
+ggplot(mpg, 
+       aes(x = manufacturer, fill = drv)) + 
+  geom_bar(position = "stack") + 
+  theme(axis.text.x = element_text(angle = 90)) # , vjust = 0.5, hjust=1
+```
+
+## Grouped Bar Chart
+
+```{r}
+# stacked bar chart
+ggplot(mpg, 
+       aes(x = class, fill = drv)) + 
+  geom_bar(position = "dodge")
+
+# grouped bar plot preserving zero count bars
+ggplot(mpg,  aes(x = class, fill = drv)) + 
+  geom_bar(position = position_dodge(preserve = "single"))
+```
+
+## Segmented Bar Chart 
+
+A segmented bar plot is a stacked bar plot where each bar represents 100 percent. 
+This type of plot is particularly useful if the goal is to compare the percentage of a category in one variable across each level of another variable
+
+```{r, echo=F}
+# bar plot, with each bar representing 100%
+ggplot(mpg, aes(x = class, fill = drv)) + 
+  geom_bar(position = "fill") + 
+  labs(y = "Proportion")
+```
+
+## Scatter Plot
+
+```{r, echo=F}
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point()
+
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(color="cornflowerblue", size = 4, alpha=.8)
+
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) + 
+  geom_point(size = 1.2, alpha=.8)
+
+
+```
+
+## Add a trend line 
+
+```{r}
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(size = 1.2, alpha=.8) + 
+  geom_smooth()
+
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) + 
+  geom_point(size = 1.2, alpha=.8) + 
+  geom_smooth()
+
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) + 
+  geom_point(size = 1.2, alpha=.8) + 
+  geom_smooth() + 
+  scale_x_continuous(label = scales::dollar, 
+                     limits = c(0, 100000)) 
+```
+
+## Line plot 
+
+When one of the two variables represents time, a line plot can be an effective method of displaying relationship.
+
+```{r}
+# simple line plot for one country
+TRdata <- gapminder %>% 
+filter(country == "Turkey") 
+
+TRdata %>% 
+ggplot(aes(x = year, y = lifeExp)) +
+  geom_line() 
+
+TRdata %>% 
+  ggplot(aes(x = year, y = lifeExp)) +
+  geom_line(size = 1.5, color = "lightgrey") +
+  geom_point(size = 3, color = "steelblue")
+
+
+```
+
+## A bit customization
+
+```{r}
+TRdata %>% 
+  ggplot(aes(x = year, y = lifeExp)) +
+  geom_line(size = 1.5, color = "grey") +
+  geom_point(size = 3, color = "steelblue") + 
+labs(y = "Life Expectancy (ages)", 
+       x = "Year",
+       title = "Life expectancy changes over time",
+       subtitle = "Turkey (1952-2007)",
+       caption = "Source: http://www.gapminder.org/data/")
+
+```
+
+## Grouped Kernel density 
+
+One can compare groups on a numeric variable by superimposing kernel density plots in a single graph.
+
+```{r}
+ggplot(gapminder, aes(x = lifeExp, fill = continent)) +
+  geom_density(alpha = 0.5, outline.type = "upper") + 
+  labs(title = "Density plots of Life Expectancy", 
+       subtitle = "For each continent")
+```
+
+
+## Boxplot 
+
+```{r}
+ggplot(gapminder, aes(x = lifeExp, fill = continent)) +
+  geom_boxplot() + 
+  labs(title = "Life Expectancy boxplot")
+
+```
+
+## Boxplot 
+
+```{r}
+ggplot(gapminder, aes(y = lifeExp, fill = continent)) +
+  geom_boxplot() +
+  labs(title = "Life Expectancy boxplot")
+
+ggplot(gapminder, aes(y = lifeExp, fill = continent)) +
+  geom_boxplot(outlier.alpha = 1.2, notch = T, 
+               outlier.colour = "red", outlier.size = 2) +
+  labs(title = "Life Expectancy boxplot")
+
+```
+
+## Boxplot-Scatter
+
+```{r, echo=F}
+ggplot(gapminder, aes(x= continent, y = lifeExp, color = continent)) +
+  geom_boxplot(size=1, outlier.shape = 1) +
+  geom_jitter(alpha = 0.3, width=.2) + 
+  # geom_point() + 
+  labs(title = "Life Expectancy boxplot") + 
+  coord_flip()
+```
+
+
+
+## Violin plots
+
+Violin plots are similar to kernel density plots, but are mirrored and rotated by 90 degress
+
+```{r}
+ggplot(gapminder, aes(x = continent, y = lifeExp, fill = continent)) +
+  geom_violin() +
+  labs(title = "Life Expectancy boxplot")
+```
+
+## Box-violin merged
+
+```{r}
+# A useful variation is to superimpose boxplots on violin plots
+ggplot(gapminder, aes(x = continent, y = lifeExp, fill = continent)) +
+  geom_violin() + # alpha = 0.5
+  geom_boxplot(fill = "orange", width = .2 , outlier.colour = "red", 
+               outlier.size = 2)
+
+```
+
+##
+
+![](BreakTime.gif)
+
+## Multivariate Plots
+
+Multivariate graphs display the relationships among three or more variables. 
+Two common methods: 
+
+- grouping 
+- faceting.
+
+## Grouping 
+
+```{r}
+ggplot(gapminder, 
+       aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() 
+
+ggplot(gapminder, 
+       aes(x = gdpPercap, y = lifeExp, color=continent)) +
+  geom_point() 
+
+ggplot(gapminder, 
+       aes(x = gdpPercap, y = lifeExp, color=continent, shape = as.factor(year))) +
+  geom_point() 
+```
+
+## A Better one 
+
+```{r}
+ggplot(mpg, 
+       aes(x = cty, y = hwy, color=as.factor(cyl), shape = fl)) +
+  geom_point() 
+```
+
+## Faceting 
+
+In faceting, a graph consists of several separate plots or small multiples, one for each level of a third variable, or combination of variables
+
+```{r}
+ggplot(mpg, 
+       aes(x = cty, y = hwy, color=as.factor(cyl))) +
+  geom_point() + 
+  facet_wrap(~fl)
+```
+
+## OR 
+
+```{r}
+ggplot(mpg, 
+       aes(x = cty, fill=as.factor(cyl))) +
+  geom_histogram() + 
+  facet_grid(year ~ fl)
+```
+
+
+## About Scaling
+
+```{r}
+attach(CPS85)
+ggplot(CPS85, aes(x = age, y= wage, color=sex)) +
+  geom_point()
+
+ggplot(CPS85, aes(x = age, y= wage, color=sex)) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(min(age), max(age), 10), 
+                     limits=c(min(age), max(age))) + 
+ scale_y_continuous(label = scales::dollar) 
+
+```
+
+## Discrete axis
+
+```{r}
+attach(CPS85)
+ggplot(CPS85, aes(x = sector)) +
+  geom_bar(position = "dodge")
+
+ggplot(CPS85, aes(x = sector)) +
+  geom_bar()+
+  scale_x_discrete(limits = as.character(unique(CPS85$sector)), 
+                   labels = c("Const", "Sales", "Clerical", "Service", 
+                              "Manufacture", "Prof", "Other", "Man")) +
+  scale_y_percent() 
+  coord_flip()
+```
+
+## Labeling the graph
+
+```{r}
+# add plot labels
+ggplot(CPS85, 
+       aes(x = educ, y=wage, color = sex, shape = married)) +
+  geom_point(size = 3, 
+             alpha = .5) +
+  # geom_smooth(se = FALSE) +
+  # facet_wrap(~married) + 
+  labs(title = "Wage by education level",
+       subtitle = "For sex and marriage type",
+       caption = "Source: CPS85 data set",
+       x = "Education (years)",
+       y = "Wage",
+       color = "sex",
+       shape = "married")
+```
+
+
+## Annotations
+
+There are two primary reasons to add text to a graph
+
+- to identify the numeric qualities of a geom
+
+- to provide additional information
+
+```{r}
+# basic scatterplot 
+ggplot(CPS85, 
+       aes(x = educ, y=wage, color = sex, shape = married)) +
+  geom_jitter(size = 3, 
+             alpha = .5) + 
+  geom_text(label = union, size = 3) + 
+  scale_x_continuous(limits =c(15, 20))
+
+```
+
+## Adding some lines 
+
+```{r}
+# add annotation line and text label
+mean_wage <- mean(CPS85$wage)
+mean_educ <- mean(CPS85$educ)
+
+ggplot(CPS85, 
+       aes(x = educ, y=wage, color = sex, shape = married)) +
+  geom_point(size = 3, 
+             alpha = .8) + 
+  geom_hline(yintercept = mean_wage, color = "darkred", linetype = "dashed") +
+  annotate("text", mean_wage, mean_wage + 1, label = "Mean", color = "darkred") +
+  annota
+  geom_vline(xintercept = mean_educ, color = "darkblue", linetype = "solid") + 
+  annotate("text", mean_educ, mean_educ + 15, label = "Mean", color = "darkblue")
+
+```
+
+## Highlighting a single group
+
+The **gghighlight** function in the **gghighlight** package is designed for this
+
+```{r}
+# highlight a set of points
+library(gghighlight)
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point(color = "red",
+             size=2) +
+  gghighlight(class == "midsize")
+  
+
+```
+
+
+## About themes
+
+ggplot2 themes control the appearance of all non-data related components of a plot.
+
+We have lots of options for this, 
+
+- **available themes in ggplot2**
+
+- **other packages for themes: ggtheme etc.**
+
+- **manual modification of the available ones**
+
+## Themes over graph
+
+```{r}
+
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point(color = "red",
+             size=2) +
+  gghighlight(class == "midsize") + 
+  theme_bw()
+  theme_classic() # Try other options 
+```
+
+## ggthemes package
+
+```{r}
+library(ggthemes)
+theme_set(new = theme_void())
+
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point(color = "red",
+             size=2) +
+  gghighlight(class == "midsize") + 
+  ggthemes::theme_gdocs()
+
+```
+
+## 
+
+```{r echo=F}
+new_theme <- function(base_size = 14, base_family = "", base_line_size = base_size/22, 
+          base_rect_size = base_size/22) 
+{
+  theme_grey(base_size = base_size, base_family = base_family, 
+             base_line_size = base_line_size, base_rect_size = base_rect_size) %+replace% 
+    theme(panel.background = element_rect(fill = "white", 
+          colour = NA), panel.border = element_rect(fill = NA, 
+          colour = "grey20"), panel.grid = element_line(colour = "red"), 
+          panel.grid.minor = element_line(size = rel(0.5)), 
+          strip.background = element_rect(fill = "grey85", 
+                                          colour = "grey20"), legend.key = element_rect(fill = "white", 
+                                                                                        colour = NA), complete = TRUE)
+}
+
+
+ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point(color = "red",
+             size=2) +
+  gghighlight(class == "midsize") + 
+  newtheme()
+```
+
+
+## Saving graphs
+
+```{r}
+theme_set(new = theme_void())
+
+plot <- ggplot(mpg, aes(x = cty, y = hwy)) +
+  geom_point(color = "red",
+             size=2) +
+  gghighlight(class == "midsize")  
+
+ggsave(plot, filename = "myplot.png")
+```
+
+## Other formats 
+
+![](saveformats.png)
+
+## Further reads
+
+- https://ggplot2-book.org/
+
+- https://www.r-graph-gallery.com/
+
+- http://www.cookbook-r.com/Graphs/
+
+- https://ggplot2.tidyverse.org/reference/index.html#section-scales
+
+- https://ggplot2.tidyverse.org/reference/ggtheme.html
+
+- Data Visualization: A Practical Introduction Kieran Healy
+
+- https://github.com/amzoss/ggplot2-DF19
+
+## Further reads
+
+- https://ggplot.library.duke.edu/guide.html
+
+- https://library.duke.edu/data/tutorials
+
+- https://www.r-graph-gallery.com/ggplot2-package.html
+
+- https://github.com/rstudio/cheatsheets/blob/master/data-visualization-2.1.pdf
+
+- https://www.cedricscherer.com/2019/08/05/a-ggplot2-tutorial-for-beautiful-plotting-in-r/
+
+- https://www.cedricscherer.com/slides/2019-08-28-intro-ggplot-statsizw#50

@@ -1,0 +1,649 @@
+---
+title: "ggplot Lecture Notes-Day2"
+author: "oevkaya"
+date: "26/09/2021"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Small Recap
+
+![](4layervis.png)
+
+## 
+
+![](aesthetics.png)
+## 
+
+![](shapes.png)
+
+## 
+
+![](48geoms.png)
+
+## Small recap example
+
+```{r}
+# theme_set(new = new_theme())
+ggplot(mpg, aes(x = cty, y = hwy, fill=as.factor(cyl))) +
+  geom_point(color = "red", size=2, shape = 23) +
+  geom_vline(xintercept = 20, color = "red") + geom_hline(yintercept = 30, color ="blue") +
+  # geom_text(aes(label=as.factor(cyl)), size=3.6, vjust = 0, nudge_y = 0.5) +
+  facet_wrap(~year) +
+  ggthemes::theme_fivethirtyeight() 
+```
+
+##
+
+![](StopMadness.gif)
+
+## More Customization
+
+```{r, echo=F}
+theme_set(theme_bw(16))
+
+plot <- ggplot(mpg, aes(x = cty, y = hwy, fill=as.factor(cyl), size = as.factor(cyl))) +
+  geom_point(color = "black", size=2, shape = 23) +
+  geom_vline(xintercept = 20) + geom_hline(yintercept = 30) +
+  labs(title = "Relationship between cty and hwy", 
+       subtitle= "For each cyl level", 
+       caption= "Source is mpg data",
+       color = "cyl") + 
+  scale_fill_discrete(name = "cyl")
+
+plot
+
+```
+
+## 
+
+```{r, echo=F}
+
+plot + theme(axis.title.x=element_text(size=16, color="red", face="bold", angle=0), 
+             axis.title.y=element_text(size= 16, color = "blue", angle = 0),
+             legend.title=element_text(color="purple", face="bold",size=12),
+             legend.text = element_text(color = "purple"), 
+             plot.title = element_text(size=24),
+             axis.ticks.x = element_line(size = 4),
+            legend.position = "bottom") 
+```
+
+
+
+## Beyond ggplot2
+
+Extension packages for ggplot2 over the past 10 years; 
+
+1. gganimate: animates ggplot2 visualizations
+
+2. ggdendro: to control the appearance and display of your cluster analyses
+
+3. ggthemes: contains themes and scales that let you replicate the look of 
+work by data viz giants from Edward Tufte to Fivethirtyeight
+
+4. ggpubr: to make it easy to produce publication-ready plots using ggplot2
+
+5. Plotly: makes interactive, publication-quality graphs, especially for 3D plots
+
+6. patchwork: to deal with several related plots using arithmetic
+
+7. ggridges: useful for visualizing changes in distributions over time, space, or another continuous variable
+
+## Beyond ggplot2
+
+8. ggmap: for visualizing spatial data and models
+
+9. ggrepel:  to give ggplot2 users greater control over how text labels appear in their charts
+
+10. ggcorrplot: offers an elegant set of options and was inspired by the corrplot package
+
+11. ggradar: useful way of visualizing multivariate data, revealing patterns and making it easy to draw comparisons
+
+12. GGally: brings together a whole slew of useful additional visualization functionality, all in one package. You can use GGally to quickly plot the coefficients of a model or to draw networks over maps library(GGally)
+
+13. ggiraph: to add advanced interactions or animations to your ggplots
+
+## Beyond ggplot2
+
+14. ggstatsplot: Enhancing ggplot2 plots with statistical analysis
+
+15. ggsignif: Visualisation toolbox for beautiful and publication-ready figures
+
+16. ggalt: alternative coords, geoms, stats & scales
+
+17. ggforce: several interesting add-on features
+
+18. ggraph: networks, graphs & trees
+
+19. ggtext: rich-text rendering
+
+20. hrbrthemes: typography-centric themes
+
+21. ggvis: to build interactive graphics for exploratory data analysis ggvis also incorporates shinys reactive programming model and dplyrs grammar of data transformation
+
+
+For further reading and list about them: 
+
+https://github.com/erikgahner/awesome-ggplot2
+
+## gganimate
+
+```{r}
+library(gganimate)
+data("economics")
+
+ggplot(economics) +
+    aes(date, unemploy) +
+    geom_line() +
+    transition_reveal(date)
+```
+
+
+## gganimate
+
+```{r}
+library(gganimate)
+# useful data set
+library(gapminder)
+
+# str(gapminder) gapminder %>% filter(country == "Turkey")
+
+p <- ggplot(gapminder, 
+  aes(x = gdpPercap, y=lifeExp, size = pop, colour = country)) +
+  geom_point(show.legend = T, alpha = 0.7) +
+  scale_color_viridis_d() +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  labs(x = "GDP per capita", y = "Life expectancy")
+
+p + transition_time(year) +
+  labs(title = "Year: {frame_time}") + 
+  theme_minimal()
+    # + shadow_wake(wake_length = 0.1, alpha = FALSE)
+
+
+```
+
+## 
+
+```{r}
+# By continent
+p + facet_wrap(~continent) +
+  transition_time(year) +
+  labs(title = "Year: {frame_time}") + 
+  theme_minimal()
+```
+
+## 
+
+![](ggpacman.gif)
+
+## ggtheme
+
+```{r, eval= FALSE}
+library(ggthemes)
+ggplot(gapminder, aes(x = lifeExp)) +
+  stat_ecdf(geom = "step") +
+  theme_economist_white()
+```
+
+## ggpubr
+
+```{r}
+library(ggpubr)
+p <- ggboxplot(gapminder, x = "pop", y = "lifeExp",
+               color = "continent", 
+               palette =c("#00AFBB", "#E7B800", "#FC4E07", "#FC4E08", "#E7B801"),
+               add = "jitter")
+# p
+
+# Specify the comparisons you want
+my_comparisons <- list( c("Africa", "Americas"))
+# Add p-values comparing groups
+p + stat_compare_means(comparisons = my_comparisons) + 
+  # Add pairwise comparisons p-value
+  stat_compare_means(label.y = 90) 
+```
+
+## tvthemes
+
+```{r}
+library(tvthemes)
+library(extrafont)
+ggplot(diamonds, aes(price, fill = cut)) +
+  geom_histogram(binwidth = 500) +
+  scale_fill_rickAndMorty() +
+  labs(title = "Dammit Morty, You Know Diamonds Aren't Forever Right?",
+       subtitle = "They're blood diamonds, Morty **burp**",
+       caption = "Wubbalubbadubdub!") + 
+  theme_rickAndMorty()
+```
+
+##
+
+![](OMG.gif)
+
+## plotly 
+
+```{r}
+library(plotly)
+library(hrbrthemes)
+
+p <- ggplot(gapminder, aes(x=lifeExp, fill = continent)) +
+  geom_density(alpha=0.5) + 
+  theme_ipsum()
+
+p
+
+fig <- ggplotly(p)
+fig
+
+
+```
+
+## plotly
+
+```{r}
+# 3D plots
+
+x <- runif(50, 0, 1)
+y <- runif(50, 0, 1)
+z <- runif(50, 0, 1)
+
+xyz <- data.frame(x,y,z)
+
+fig <- plot_ly(xyz, x = ~x, y = ~y, z = ~z, type = 'mesh3d')
+
+fig
+
+```
+
+## scatter in 3D
+
+```{r}
+# 3D scatter plot
+plot_ly(gapminder, x = ~gdpPercap, y = ~pop, z = ~lifeExp, color = ~continent) %>% 
+  add_markers()
+```
+
+##
+
+![](What.gif)
+
+## 
+
+```{r}
+library(datasauRus)
+
+p <- ggplot(datasaurus_dozen) +
+  aes(x, y, frame = dataset) +
+  geom_point()
+# p
+ ggplotly(p)
+```
+
+##
+
+![](notFunny.gif)
+
+## gridExtra
+```{r}
+library(gridExtra)
+p1 <- ggplot(gapminder, aes(x=lifeExp, fill = continent)) +
+  geom_density(alpha=0.5) + 
+  theme_ipsum()
+
+p2 <- ggplot(gapminder, aes(x=pop, fill = continent)) +
+  geom_density(alpha=0.5) + 
+  theme_ipsum()
+
+grid.arrange(p1, p2, p1, p2, nrow = 2)
+```
+
+## patchwork
+
+```{r, echo=TRUE}
+library(patchwork)
+p1 <- ggplot(gapminder, aes(x=lifeExp, fill = continent)) +
+  geom_density(alpha=0.5) + 
+  theme_ipsum()
+
+p2 <- ggplot(gapminder, aes(x=pop, fill = continent)) +
+  geom_density(alpha=0.5) + 
+  theme_ipsum()
+
+p3 <- ggplot(gapminder, aes(x=gdpPercap, fill = continent)) +
+  geom_density(alpha=0.5) + 
+  theme_ipsum()
+
+p4 <- ggplot(gapminder, aes(x=gdpPercap, y = lifeExp, color = continent)) +
+  geom_point(alpha=0.5) + 
+  theme_ipsum()
+
+(p1 + p2) / (p3 + p4)
+```
+
+## ggridges
+
+```{r}
+library(ggridges)
+
+ggplot(gapminder, aes(y = continent, x = lifeExp, fill = continent)) +
+  # geom_density_ridges() +  
+  # geom_boxplot() +
+  geom_density_ridges(alpha = 0.5) + 
+  theme(legend.position = "none")
+
+```
+
+## 
+
+```{r, echo=TRUE}
+library(ggridges)
+
+ggplot(gapminder, aes(x = gdpPercap, y = continent, fill = continent)) +
+  geom_density_ridges(scale = 2) + # play with scale 
+  # coord_cartesian(clip = "off") + # to avoid clipping of the very top of the top ridgeline
+  theme_ridges()
+```
+
+
+## ggcorplot
+
+```{r, echo=TRUE}
+library(ggcorrplot)
+
+# Compute a correlation matrix
+corr <- round(cor(gapminder[, c("lifeExp", "pop", "gdpPercap")]), 2)
+head(corr)
+
+# method = "square" (default)
+ggcorrplot(corr)
+
+# method = "circle"
+ggcorrplot(corr, method = "circle")
+
+# Add correlation coefficients
+ggcorrplot(corr,
+           hc.order = TRUE, # Try to remove
+           type = "lower", # Try to remove
+           lab = TRUE)
+
+# Compute a matrix of correlation p-values
+p.mat <- cor_pmat(gapminder[, c("lifeExp", "pop", "gdpPercap")])
+head(p.mat)
+
+# Add correlation significance level
+# Barring the no significant coefficient
+ggcorrplot(corr,
+           hc.order = TRUE,
+           type = "lower",
+           p.mat = p.mat)
+
+```
+
+
+## ggResidpanel 
+
+```{r}
+
+# install.packages("ggResidpanel")
+# library(ggResidpanel)
+
+# Compute a correlation matrix
+corr <- round(cor(mtcars), 2)
+
+# method = "square" (default)
+ggcorrplot(corr)
+
+# Fit a model
+mtcars_model <- lm(mpg ~ hp, data = mtcars)
+
+# Create the default panel of plots
+resid_panel(mtcars_model)
+
+# Some modification 
+resid_panel(mtcars_model, plots = c("resid", "qq", "yvp"), 
+            qqbands = TRUE, theme = "classic")
+
+# Create an interactive panel of the default diagnostic plots
+resid_interact(mtcars_model)
+
+```
+
+## lindia
+
+```{r, warning=F, message=F}
+# check the same model 
+library(lindia)
+
+# visualize diagnostic plots with a call to lindia
+gg_diagnose(mtcars_model)
+
+```
+
+## ggeasy
+
+```{r}
+# install.packages("treemapify")
+library(ggeasy)
+
+
+ggplot(mtcars, aes(hp, mpg)) + 
+    geom_point()
+
+
+# rotate x axis labels
+ggplot(mtcars, aes(hp, mpg)) + 
+    geom_point() + 
+    easy_rotate_x_labels()
+
+
+# rotate y axis labels
+ggplot(mtcars, aes(hp, mpg)) + 
+    geom_point() + 
+    easy_rotate_y_labels()
+
+# remove 'size' legend
+ggplot(mtcars, aes(wt, mpg, colour = cyl, size = hp)) +
+    geom_point() +
+    easy_remove_legend(size)
+
+# make the x axis labels larger
+ggplot(mtcars, aes(mpg, hp)) +
+  geom_point() +
+  easy_x_axis_labels_size(18)
+
+```
+
+## ggsignif
+
+
+```{r, echo=TRUE}
+library(ggplot2)
+library(ggsignif)
+
+ggplot(mpg, aes(class, hwy)) +
+  geom_boxplot() +
+  geom_signif( comparisons = list(c("compact", "midsize"), c("minivan", "suv")),
+    map_signif_level = TRUE, textsize = 6
+  )
+
+
+```
+
+## GGally
+
+```{r, message= F}
+library(GGally)
+
+pm <- ggpairs(mtcars, columns = c("mpg", "hp", "disp")) 
+# Add columnlabels
+pm
+
+```
+
+## 
+
+```{r}
+pm <- ggpairs(mtcars, mapping = aes(color = as.factor(gear)), columns= c("mpg", "hp", "disp"))
+pm
+
+```
+
+## 
+
+```{r}
+mtcars$cyl <- as.factor(mtcars$cyl)
+pm <- ggpairs(mtcars, mapping = aes(color = as.factor(gear)), 
+              columns= c("mpg", "hp", "disp", "cyl"))
+pm
+```
+
+## ggvis
+
+```{r}
+library(ggvis)
+
+# points
+mtcars %>% ggvis(~wt, ~mpg) %>% layer_points()
+```
+
+## 
+
+```{r}
+# smooth lines
+mtcars %>% 
+  ggvis(~wt, ~mpg) %>%
+  layer_points() %>%
+  layer_smooths()
+```
+
+## 
+
+```{r}
+# grouping
+mtcars %>% 
+  ggvis(~wt, ~mpg) %>% 
+  layer_points(fill = ~factor(cyl))
+```
+
+##
+
+![](NotFinished.gif)
+
+## About DAGs (dagitty and ggdag package)
+
+```{r}
+# install.packages(c("dagitty","ggdag"))
+
+library(dagitty)
+library(ggdag)
+
+dag <- dagitty("dag{U5 <- U2 -> U4 U3 -> U2 <- U1}")
+tidy_dagitty(dag)
+
+ggdag(dag, layout = "circle") +
+  theme_dag_blank()
+```
+
+
+## DiagrammR
+
+```{r}
+library(DiagrammeR)
+
+learnpath <- mermaid("
+graph TD
+A[1: Start with base plots]--> B[2: Identify its weakness]
+B--> C{3: Start with the basics of ggplot2}
+C--- |beyond| D(4: static graphs)
+C--- |beyond| E(5: interactive graphs)
+C--- |beyond| F(6: animations)
+C--- |beyond| G(7: dashboards)
+style A fill:#E5E25F; 
+style B fill:#E5E25F;
+style C fill:#87AB51;
+")
+
+# plotly::export(CRPflow, file = "CRPflow.png")
+
+```
+
+## 
+
+![](BlahBlah.gif)
+
+## For interactive plots
+
+- **Leaflet** is a javascript library for interactive maps. The leaflet package can be used to generate leaflet graphs R.
+
+- **rbokeh** is an interface to the Bokeh graphics library.
+
+- **rCharts** can create a wide range of interactive graphics.
+
+- The **highcharter** package provides access to the Highcharts JavaScript graphics library
+
+- The **r2d3** package provides a suite of tools for using D3 visualizations with R
+
+## What else ?
+
+- we can use R scripts in Power BI, and use ggplot2 as well for data visualization
+
+https://www.youtube.com/watch?v=SMaJf6UBKeI
+
+https://docs.microsoft.com/en-us/power-bi/connect-data/desktop-r-ide
+
+- Possible to use with Tableau as well
+
+https://visualbi.com/blogs/tableau/tableau-integration-r/
+
+## Upcoming event? 
+
+- https://www.meetup.com/rladies-freiburg/events/280030764/?rv=me1&_xtd=gatlbWFpbF9jbGlja9oAJDEzYzExOGU4LTZhOWItNDA5My05MTMzLTMxMjQ4OTE5YTdmYQ&_af=event&_af_eid=280030764
+
+## Further readings
+
+- https://rkabacoff.github.io/datavis/
+
+# https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/
+
+- http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/
+
+- https://patchwork.data-imaginist.com/
+
+- https://cran.r-project.org/web/packages/ggcorrplot/readme/README.html
+
+- https://ggobi.github.io/ggally/articles/ggpairs.html
+
+- https://indrajeetpatil.github.io/ggstatsplot/
+
+- https://plotly.com/r/
+
+## Further readings
+
+- https://ggvis.rstudio.com/ggvis-basics.html
+
+- https://cran.r-project.org/web/packages/ggraph/vignettes/Edges.html
+
+- https://davidgohel.github.io/ggiraph/
+
+- https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html
+
+- https://www.statmethods.net/advgraphs/trellis.html
+
+- http://www.sthda.com/english/wiki/lattice-graphs
+
+- https://mode.com/blog/r-data-visualization-packages/
+
+- https://github.com/erikgahner/awesome-ggplot2
+
+## 
+
+![](thanks.gif)
+
+
+
